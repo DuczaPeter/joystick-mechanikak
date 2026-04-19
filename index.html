@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+
+<html lang="hu">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Joystick mechanikák, szenzorok és kapcsolók – modern, kattintható összefoglaló</title>
+<style>
+:root {
+  --bg: #09111f;
+  --bg-2: #0f1a2d;
+  --panel: rgba(16, 25, 43, 0.88);
+  --panel-strong: rgba(12, 19, 34, 0.96);
+  --panel-soft: rgba(20, 31, 53, 0.78);
+  --text: #ecf3ff;
+  --muted: #aebad3;
+  --line: rgba(145, 180, 255, 0.16);
+  --line-strong: rgba(145, 180, 255, 0.30);
+  --accent: #7cc6ff;
+  --accent-strong: #4db2ff;
+  --accent-2: #8ff1b5;
+  --warn: #ffd580;
+  --danger: #ff9b9b;
+  --shadow-lg: 0 30px 80px rgba(0,0,0,.42);
+  --shadow-md: 0 18px 36px rgba(0,0,0,.28);
+  --radius-xl: 28px;
+  --radius-lg: 22px;
+  --radius-md: 16px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--text);
+  font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.7;
+  background:
+    radial-gradient(circle at top left, rgba(77,178,255,.14), transparent 30%),
+    radial-gradient(circle at top right, rgba(143,241,181,.10), transparent 26%),
+    linear-gradient(180deg, #08101d, #0d1526 36%, #09111f 100%);
+}
+a { color: inherit; }
+.wrap {
+  width: min(1240px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 56px;
+}
+header {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(124,198,255,.22), transparent 34%),
+    radial-gradient(circle at 95% 10%, rgba(143,241,181,.16), transparent 24%),
+    linear-gradient(135deg, rgba(18, 31, 54, 0.94), rgba(10, 17, 30, 0.96) 60%, rgba(7, 13, 23, 1));
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(10px);
+  margin-bottom: 22px;
+}
+header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255,255,255,.06), transparent 24%, transparent 76%, rgba(255,255,255,.04));
+}
+h1, h2, h3 { line-height: 1.18; margin: 0 0 14px; }
+h1 {
+  font-size: clamp(2.1rem, 4vw, 3.2rem);
+  max-width: 12ch;
+  letter-spacing: -0.03em;
+}
+h2 {
+  font-size: clamp(1.45rem, 2.4vw, 2rem);
+  margin-top: 0;
+}
+h3 { font-size: 1.12rem; }
+p { margin: 0 0 14px; }
+.lead {
+  color: #d8e6fb;
+  font-size: 1.06rem;
+  max-width: 78ch;
+}
+.hero-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0 18px;
+}
+.hero-pill {
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.11);
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+.hero-pill strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1rem;
+  color: var(--text);
+}
+.hero-pill span {
+  color: var(--muted);
+  font-size: .95rem;
+}
+nav.toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+nav.toc a {
+  text-decoration: none;
+  color: var(--text);
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 999px;
+  padding: 10px 15px;
+  font-weight: 700;
+  transition: .18s ease;
+}
+nav.toc a:hover {
+  transform: translateY(-1px);
+  border-color: rgba(124,198,255,.42);
+  color: var(--accent);
+  box-shadow: 0 10px 20px rgba(0,0,0,.18);
+}
+main.stack {
+  display: grid;
+  gap: 18px;
+}
+section, .legend, .note, .quick, .sources, .video-box {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(10px);
+}
+.legend {
+  background: linear-gradient(180deg, rgba(13,23,40,.92), rgba(15,28,48,.86));
+}
+.video-box {
+  background: linear-gradient(180deg, rgba(12,20,35,.94), rgba(18,28,48,.86));
+}
+.quick {
+  background: linear-gradient(180deg, rgba(10, 30, 26, 0.88), rgba(16, 28, 44, 0.92));
+}
+.quick h2::after,
+.section-title h2::after,
+.video-box h2::after,
+.sources h2::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 4px;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent-strong), rgba(143,241,181,.9));
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+.card {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(17,27,46,.96), rgba(13,21,37,.94));
+  border: 1px solid rgba(145,180,255,.14);
+  border-radius: 20px;
+  padding: 18px;
+  box-shadow: var(--shadow-md);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, rgba(77,178,255,.95), rgba(143,241,181,.95));
+  opacity: .9;
+}
+.card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(124,198,255,.28);
+  box-shadow: 0 24px 46px rgba(0,0,0,.32);
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0 6px;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border-radius: 999px;
+  background: rgba(124,198,255,.10);
+  border: 1px solid rgba(124,198,255,.22);
+  color: #e8f4ff;
+  text-decoration: none;
+  font-weight: 700;
+  transition: .18s ease;
+}
+.chip::after {
+  content: "↗";
+  font-size: .9em;
+  opacity: .78;
+}
+.chip:hover, .term:hover, .badge:hover {
+  transform: translateY(-1px);
+  border-color: rgba(124,198,255,.40);
+  background: rgba(124,198,255,.17);
+}
+.term {
+  color: #8fd0ff;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  font-weight: 800;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+  color: #d9efff;
+  background: rgba(124,198,255,.14);
+  border: 1px solid rgba(124,198,255,.24);
+  vertical-align: middle;
+  text-decoration: none;
+}
+.badge::before {
+  content: "ℹ";
+  font-weight: 900;
+}
+.muted, .mini {
+  color: var(--muted);
+}
+.good { color: var(--accent-2); font-weight: 800; }
+.warn { color: var(--warn); font-weight: 800; }
+.bad { color: var(--danger); font-weight: 800; }
+ul { margin: 10px 0 0 18px; padding: 0; }
+li { margin: 6px 0; }
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-md);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(11,18,31,.98);
+  min-width: 760px;
+}
+th, td {
+  padding: 14px 15px;
+  border-bottom: 1px solid rgba(145,180,255,.12);
+  vertical-align: top;
+  text-align: left;
+}
+th {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(180deg, rgba(20,34,57,.98), rgba(17,29,48,.98));
+  color: #e6f1ff;
+  font-size: .95rem;
+}
+tr:hover td {
+  background: rgba(124,198,255,.04);
+}
+tr:last-child td { border-bottom: 0; }
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+footer {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: .95rem;
+  text-align: center;
+  padding: 14px 10px 0;
+}
+.anchor {
+  display: block;
+  position: relative;
+  top: -12px;
+  visibility: hidden;
+}
+.source-note {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  color: var(--muted);
+}
+@media (max-width: 900px) {
+  .hero-meta { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .wrap { width: min(100% - 18px, 1240px); padding-top: 18px; }
+  header, section, .legend, .note, .quick, .sources, .video-box, .card { padding: 16px; border-radius: 18px; }
+  nav.toc a, .chip { width: 100%; justify-content: space-between; }
+  h1 { max-width: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Joystick mechanikák, szenzorok és kapcsolók – érthetően</h1>
+<p class="lead">
+        Ez a verzió a korábbi összefoglaló javított, pontosított HTML-es változata. A cél nem a marketingduma, hanem az,
+        hogy emberi nyelven is tudd, mi mit csinál a joystickban, és miért érződik egyik jobbnek a másiknál.
+      </p>
+<div aria-label="Gyors áttekintés" class="hero-meta">
+<div class="hero-pill"><strong>Mechanika</strong><span>A kar érzetét ez dönti el először.</span></div>
+<div class="hero-pill"><strong>Szenzor</strong><span>A pontosság és a hosszú távú stabilitás itt dől el.</span></div>
+<div class="hero-pill"><strong>Kapcsolók</strong><span>A kezelési élményt a kattintás és a visszajelzés adja.</span></div>
+</div>
+
+<nav aria-label="Tartalomjegyzék" class="toc">
+<a href="#gyors">Gyors válasz</a>
+<a href="#mechanika">Mechanikák</a>
+<a href="#szenzor">Szenzorok</a>
+<a href="#kapcsolo">Kapcsolók és gombok</a>
+<a href="#osszefoglalo">Rövid összefoglaló</a>
+<a href="#forrasok">Források</a>
+</nav>
+</header>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<main class="stack"><section class="legend">
+<p><strong>Linkjelölés:</strong> a <a class="term" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">kék, aláhúzott technikai nevek</a>
+      és a mellettük lévő <a class="badge" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">forrás</a> címkék kattinthatók.</p>
+<p class="mini">Ahol lehetett, hivatalos gyártói vagy műszaki forrást kaptál. Ahol a fogalom inkább közösségi szóhasználat, azt külön jeleztem.</p>
+<div class="source-note"><strong>Infó link:</strong> ahol kék, aláhúzott technikai nevet vagy kis <em>forrás</em> címkét látsz, arra rá lehet kattintani, és a kapcsolódó magyarázó vagy gyártói oldal nyílik meg.</div></section><section class="video-box">
+<h2>Kiinduló videók</h2>
+<div class="chip-row">
+<a class="chip" href="https://www.youtube.com/watch?v=2z54NHzy_Gc" rel="noopener noreferrer" target="_blank">YouTube – HOTAS buyer’s guide</a>
+<a class="chip" href="https://www.youtube.com/watch?v=SFdEKhHFWxA" rel="noopener noreferrer" target="_blank">YouTube – WinWing URSA MINOR review</a>
+<a class="chip" href="https://www.youtube.com/watch?v=b54OjlXm71s" rel="noopener noreferrer" target="_blank">YouTube – Thrustmaster Sol‑R review</a>
+</div>
+<p class="mini">Fontos: nem minden videós időbélyeg volt külön hitelesíthető, ezért itt a technikai állítások nem csak a videókból, hanem külön műszaki forrásokból is össze vannak rakva.</p>
+</section><span class="anchor" id="gyors"></span><section class="quick" style="margin-top:18px;">
+<h2>Gyors válasz, ha nincs kedved végigolvasni</h2>
+<p><span class="good">Elsőnek a mechanikát nézd.</span> Ez dönti el, milyen a kar mozgása kézben.</p>
+<p><span class="good">Másodiknak a szenzort nézd.</span> A <a class="term" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">Hall-szenzor</a><a class="badge" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">forrás</a> általában jobb hosszú távon, mint a <a class="term" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">potméter</a><a class="badge" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">forrás</a>.</p>
+<p><span class="good">Harmadiknak a gombokat nézd.</span> A jó gomb attól jó, hogy egyértelmű, következetes és nem nyúlós érzésű.</p>
+<p><span class="warn">A nagy tanulság:</span> nem a bit-szám a király, hanem az egész csomag. Egy papíron menő szenzor sem ment meg egy idegesítő mechanikát.</p>
+</section><span class="anchor" id="mechanika"></span><section>
+<div class="section-title"><h2>1) Mechanikák – ez mozgatja a kart</h2></div>
+<div class="grid">
+<article class="card">
+<h3><a class="term" href="https://www.apem.com/storage/datasheets/files/joystick_serie_3000/media/joystick-serie-3000.pdf" rel="noopener noreferrer" target="_blank">Gömbcsuklós / ball-socket pivot</a><a class="badge" href="https://www.apem.com/storage/datasheets/files/joystick_serie_3000/media/joystick-serie-3000.pdf" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>Klasszikus megoldás. A kar egy központi gömbszerű forgásponton billen, és a rugó visszahúzza középre.</p>
+<p><strong>Konyhanyelven:</strong> elengeded, és a rugó azt mondja neki, hogy „na jó, most szépen vissza középre”.</p>
+<ul>
+<li><span class="good">Előny:</span> egyszerű, bevált, kompakt.</li>
+<li><span class="warn">Hátrány:</span> belépő szinten gyakrabban érezni darabosabb közepet vagy kevesebb finomhangolást.</li>
+<li><span class="mini">Fontos:</span> maga a mechanikai elv nem rossz; a valós érzetet nagyon befolyásolja a konkrét kivitel, az anyaghasználat és a gyártási minőség is.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://flightsimcontrols.com/product/gladiator-evo-space-combat-edition/" rel="noopener noreferrer" target="_blank">Csapágyas gimbal + dry clutch</a><a class="badge" href="https://flightsimcontrols.com/product/gladiator-evo-space-combat-edition/" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>Ez már vezetettebb, kulturáltabb mozgás. A hivatalos VKB oldalon külön kiemelik a <strong>ball bearings</strong> és az <strong>adjustable dry clutches</strong> részt.</p>
+<p><strong>Konyhanyelven:</strong> kevésbé „lötyögős közép”, inkább sima és kontrollált mozgás.</p>
+<ul>
+<li><span class="good">Előny:</span> jobb finom kontroll, nyugodtabb érzet, több állíthatóság.</li>
+<li><span class="warn">Hátrány:</span> drágább, és karakterre nem ugyanaz, mint egy full cam alap.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://forums.flightsimulator.com/t/please-help-explain-the-differences-between-gymbol-systems/653310" rel="noopener noreferrer" target="_blank">„Ollós” / scissor / pincer gimbal</a><a class="badge" href="https://forums.flightsimulator.com/t/please-help-explain-the-differences-between-gymbol-systems/653310" rel="noopener noreferrer" target="_blank">magyarázó forrás</a></h3>
+<p>Ez inkább közösségi szóhasználat, nem mindig hivatalos terméknév. A lényege, hogy a két tengely mozgása külön vezetettebb mechanikán fut.</p>
+<p><strong>Konyhanyelven:</strong> nem egy „egydarab csukló” érzete van, hanem inkább egy rendezettebb, összerakottabb mozgás.</p>
+<ul>
+<li><span class="good">Előny:</span> jobb közép körüli kontroll.</li>
+<li><span class="warn">Hátrány:</span> néha átlós mozdulatnál más karaktert érzel, mint cam rendszernél.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://virpil-controls.us.com/vpc-warbrd-d-base.html" rel="noopener noreferrer" target="_blank">Cam gimbal / dual-cam</a><a class="badge" href="https://virpil-controls.us.com/vpc-warbrd-d-base.html" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>Itt már a mozgás karakterét is hangolod. A VIRPIL külön ír <strong>dual-cam per axis</strong>, <strong>swappable springs and cams</strong> és <strong>clutch dampers</strong> elemekről.</p>
+<p><strong>Konyhanyelven:</strong> nem csak az számít, hogy visszamegy-e középre, hanem az is, hogy milyen érzéssel teszi.</p>
+<ul>
+<li><span class="good">Előny:</span> a leghangolhatóbb mechanikai világ.</li>
+<li><span class="warn">Hátrány:</span> drágább, és nem mindenkinek kell ekkora szabadság.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://vkb-sim.com.au/products/gunfighter-combo-cams-kit" rel="noopener noreferrer" target="_blank">Avia cam / Space cam</a><a class="badge" href="https://vkb-sim.com.au/products/gunfighter-combo-cams-kit" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>A VKB külön említi, hogy vannak repülésesebb és űrszimesebb karakterű cam profilok.</p>
+<p><strong>Konyhanyelven:</strong> egyik inkább „határozottabb közepű”, a másik inkább egyenletesebb és simább.</p>
+<ul>
+<li><span class="good">Avia:</span> sokszor jobban illik klasszikus repülős érzethez.</li>
+<li><span class="good">Space:</span> sok embernek jobb űrszimeknél és finom oldalirányú manővereknél.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://flightsimcontrols.com/product/gladiator-evo-space-combat-edition/" rel="noopener noreferrer" target="_blank">Dry clutch / axis load</a><a class="badge" href="https://flightsimcontrols.com/product/gladiator-evo-space-combat-edition/" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>Ez nem szenzor és nem gomb, hanem a mozgás terhelésének és csillapításának hangolása.</p>
+<p><strong>Konyhanyelven:</strong> plusz ellenállást ad a mozgásnak, hogy ne legyen ideges, pattogós vagy kapkodó érzésű.</p>
+<ul>
+<li><span class="good">Előny:</span> finomabb célzás, nyugodtabb közép, jobb apró mozdulatok.</li>
+<li><span class="warn">Hátrány:</span> ha túlzásba viszed, tompának érződhet.</li>
+</ul>
+</article>
+</div>
+</section><span class="anchor" id="szenzor"></span><section>
+<div class="section-title"><h2>2) Szenzorok – ez méri, hol áll a kar</h2></div>
+<div class="grid">
+<article class="card">
+<h3><a class="term" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">Potméter</a><a class="badge" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>Kontaktos megoldás: egy csúszó érintkező mozog egy ellenálláspályán.</p>
+<p><strong>Konyhanyelven:</strong> dörzsölve méri a helyzetet.</p>
+<ul>
+<li><span class="good">Előny:</span> olcsó, egyszerű, sokáig bevált megoldás volt.</li>
+<li><span class="bad">Hátrány:</span> idővel nagyobb az esélye a kopásnak, zajnak vagy driftnek.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">Hall-szenzor</a><a class="badge" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>Kontaktmentes mérés: a mágnes és a szenzor együtt nézi a mozgást, nem kell hozzá csúszó érintkező.</p>
+<p><strong>Konyhanyelven:</strong> nem koptatja magát mérés közben, hanem „mágnessel figyeli”, merre áll a kar.</p>
+<ul>
+<li><span class="good">Előny:</span> jobb hosszú távú stabilitás, kevesebb klasszikus kopási nyűg.</li>
+<li><span class="warn">Hátrány:</span> ettől még a teljes joystick nem lesz automatikusan prémium.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://flightsimcontrols.com/product/gladiator-evo-space-combat-edition/" rel="noopener noreferrer" target="_blank">Contactless MaRS sensors</a><a class="badge" href="https://flightsimcontrols.com/product/gladiator-evo-space-combat-edition/" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>A VKB saját <strong>MaRS</strong> megnevezése kontaktmentes, mágneses érzékelésre utal. A VKB saját történeti leírása szerint ez <strong>magnetic resistance</strong> elvű érzékelés, tehát rokon a Hall-világgal, de nem azonos vele.</p>
+<p><strong>Konyhanyelven:</strong> rokon megoldás a Hallhoz képest: mindkettő mágneses, kontaktmentes mérés, de nem ugyanaz a technológia.</p>
+</article>
+<article class="card">
+<h3><a class="term" href="https://www.thrustmaster.com/products/sol-r-4-hotas/" rel="noopener noreferrer" target="_blank">16 bites pontosság</a><a class="badge" href="https://www.thrustmaster.com/products/sol-r-4-hotas/" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>Valós specifikáció, de nem ez az első szám, amit nézni kell.</p>
+<p><strong>Konyhanyelven:</strong> jól hangzik a dobozon, de a kezed először a mechanikát fogja érezni, nem a specifikációs táblázatot.</p>
+<ul>
+<li><span class="good">Hasznos:</span> finom mérésnél jól jön.</li>
+<li><span class="warn">De:</span> rossz mechanikát nem fog megmenteni.</li>
+</ul>
+</article>
+</div>
+</section><span class="anchor" id="kapcsolo"></span><section>
+<div class="section-title"><h2>3) Kapcsolók, gombok és kezelőszervek</h2></div>
+<div class="grid">
+<article class="card">
+<h3><a class="term" href="https://components.omron.com/eu-en/products/switches/tactile-switches/omron-tactile-switch_features" rel="noopener noreferrer" target="_blank">Tactile switch</a><a class="badge" href="https://components.omron.com/eu-en/products/switches/tactile-switches/omron-tactile-switch_features" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>Az a fajta kapcsoló, ahol az ujjad tisztán érzi a katt pontot.</p>
+<p><strong>Konyhanyelven:</strong> nem találgatod, hogy megnyomtad-e; tudod, mert szépen visszajelez.</p>
+<ul>
+<li><span class="good">Előny:</span> biztosabb, következetesebb használat.</li>
+<li><span class="warn">Hátrány:</span> akinek nagyon puha gomb kell, annak néha túl határozott.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://www.ia.omron.com/products/category/switches/basic-switches/" rel="noopener noreferrer" target="_blank">Basic switch / snap-action / mikrokapcsoló</a><a class="badge" href="https://www.ia.omron.com/products/category/switches/basic-switches/" rel="noopener noreferrer" target="_blank">forrás</a></h3>
+<p>Határozottan pattanó kapcsolóelv, nagyon egyértelmű működéssel.</p>
+<p><strong>Konyhanyelven:</strong> keményebb, direktebb, „na ez most tényleg kattant” érzés.</p>
+<ul>
+<li><span class="good">Előny:</span> triggerekhez és fontos funkciókhoz szerethető.</li>
+<li><span class="warn">Hátrány:</span> puhább gombokhoz szokott kéznek nyersebb lehet.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://www.thrustmaster.com/products/sol-r-2-hosas-space-sim-duo/" rel="noopener noreferrer" target="_blank">Hat switch</a><a class="badge" href="https://www.thrustmaster.com/products/sol-r-2-hosas-space-sim-duo/" rel="noopener noreferrer" target="_blank">példa</a></h3>
+<p>Nem egyetlen konkrét belső kapcsolófajta neve, hanem egy többirányú kezelőszerv-forma.</p>
+<p><strong>Konyhanyelven:</strong> az a kis iránykapcsoló a hüvelykujj alatt, amivel több irányba tudsz parancsot adni.</p>
+</article>
+<article class="card">
+<h3><a class="term" href="https://www.thrustmaster.com/products/sol-r-2-hosas-space-sim-duo/" rel="noopener noreferrer" target="_blank">Kétlépcsős ravasz / double trigger</a><a class="badge" href="https://www.thrustmaster.com/products/sol-r-2-hosas-space-sim-duo/" rel="noopener noreferrer" target="_blank">példa</a></h3>
+<p>Két külön aktiválási pont van rajta.</p>
+<p><strong>Konyhanyelven:</strong> mint egy fényképezőgép gombja: félút, aztán teljes húzás.</p>
+<p class="mini">Az URSA MINOR review összefoglalója szerint a második fokozat már érezhető erőt kér.</p>
+</article>
+<article class="card">
+<h3><a class="term" href="https://www.thrustmaster.com/products/sol-r-2-hosas-space-sim-duo/" rel="noopener noreferrer" target="_blank">Analóg ministick</a><a class="badge" href="https://www.thrustmaster.com/products/sol-r-2-hosas-space-sim-duo/" rel="noopener noreferrer" target="_blank">példa</a></h3>
+<p>Ez nem csak gomb. Ez egy mini analóg vezérlő.</p>
+<p><strong>Konyhanyelven:</strong> kis hüvelykujjas joystick a nagy joystick tetején.</p>
+<ul>
+<li><span class="good">Előny:</span> finom oldalirányú vagy függőleges vezérlésre nagyon hasznos.</li>
+<li><span class="good">Tipikusan:</span> űrszimeknél kifejezetten jó cucc.</li>
+</ul>
+</article>
+<article class="card">
+<h3><a class="term" href="https://www.skywardfm.com/post/winwing-ursa-minor-fighter-short-honest-review" rel="noopener noreferrer" target="_blank">Tactile gombérzet az URSA MINOR-nál</a><a class="badge" href="https://www.skywardfm.com/post/winwing-ursa-minor-fighter-short-honest-review" rel="noopener noreferrer" target="_blank">review</a></h3>
+<p>Itt nem hivatalos gyártói adatlapról van szó, hanem egy részletes review-ról.</p>
+<p><strong>Konyhanyelven:</strong> a visszajelzés szerint a gombok határozottak, a kétlépcsős ravasz második pontja pedig rendesen érezhető.</p>
+</article>
+</div>
+</section><span class="anchor" id="osszefoglalo"></span><section>
+<h2>4) Rövid összehasonlítás egy táblában</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Téma</th>
+<th>Mit jelent?</th>
+<th>Miért jó?</th>
+<th>Mi a buktató?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a class="term" href="https://www.apem.com/storage/datasheets/files/joystick_serie_3000/media/joystick-serie-3000.pdf" rel="noopener noreferrer" target="_blank">Gömbcsuklós mechanika</a></td>
+<td>Központi forgáspont + rugó</td>
+<td>Egyszerű, bevált</td>
+<td>Belépő szinten lehet darabosabb vagy kevésbé hangolható</td>
+</tr>
+<tr>
+<td><a class="term" href="https://flightsimcontrols.com/product/gladiator-evo-space-combat-edition/" rel="noopener noreferrer" target="_blank">Csapágyas gimbal</a></td>
+<td>Vezetettebb mozgás, jobb mechanikai érzet</td>
+<td>Finomabb kontroll</td>
+<td>Drágább</td>
+</tr>
+<tr>
+<td><a class="term" href="https://virpil-controls.us.com/vpc-warbrd-d-base.html" rel="noopener noreferrer" target="_blank">Cam gimbal</a></td>
+<td>Hangolható mozgáskarakter</td>
+<td>Prémium érzés, testreszabhatóság</td>
+<td>Ár, bonyolultság</td>
+</tr>
+<tr>
+<td><a class="term" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">Potméter</a></td>
+<td>Kontaktos mérés</td>
+<td>Olcsó, egyszerű</td>
+<td>Kopás, driftkockázat</td>
+</tr>
+<tr>
+<td><a class="term" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">Hall-szenzor</a></td>
+<td>Kontaktmentes mérés</td>
+<td>Tartósabb mérési elv</td>
+<td>Önmagában nem garantál prémium élményt</td>
+</tr>
+<tr>
+<td><a class="term" href="https://components.omron.com/eu-en/products/switches/tactile-switches/omron-tactile-switch_features" rel="noopener noreferrer" target="_blank">Tactile switch</a></td>
+<td>Érezhető kattintási pont</td>
+<td>Biztos visszajelzés</td>
+<td>Van, akinek túl feszes</td>
+</tr>
+<tr>
+<td><a class="term" href="https://www.ia.omron.com/products/category/switches/basic-switches/" rel="noopener noreferrer" target="_blank">Basic / snap-action switch</a></td>
+<td>Pattanós kapcsolás</td>
+<td>Nagyon egyértelmű érzet</td>
+<td>Kevésbé puha kezelési érzet</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section><span class="anchor" id="forrasok"></span><section class="sources" style="margin-top:22px;">
+<h2>5) Források röviden</h2>
+<div class="chip-row">
+<a class="chip" href="https://www.apem.com/storage/datasheets/files/joystick_serie_3000/media/joystick-serie-3000.pdf" rel="noopener noreferrer" target="_blank">APEM – ball-socket pivot</a>
+<a class="chip" href="https://flightsimcontrols.com/product/gladiator-evo-space-combat-edition/" rel="noopener noreferrer" target="_blank">VKB/Flightsimcontrols – ball bearings, dry clutch, MaRS</a>
+<a class="chip" href="https://flightsimcontrols.com/2012/11/16/history-of-vkb/" rel="noopener noreferrer" target="_blank">VKB – MaRS / magnetic resistance háttér</a>
+<a class="chip" href="https://virpil-controls.us.com/vpc-warbrd-d-base.html" rel="noopener noreferrer" target="_blank">VIRPIL – dual-cam, springs, clutch</a>
+<a class="chip" href="https://vkb-sim.com.au/products/gunfighter-combo-cams-kit" rel="noopener noreferrer" target="_blank">VKB – Avia / Space cams</a>
+<a class="chip" href="https://www.ti.com/lit/pdf/SLYT826" rel="noopener noreferrer" target="_blank">Texas Instruments – Hall vs contact sensing</a>
+<a class="chip" href="https://components.omron.com/eu-en/products/switches/tactile-switches/omron-tactile-switch_features" rel="noopener noreferrer" target="_blank">OMRON – tactile switch</a>
+<a class="chip" href="https://www.ia.omron.com/products/category/switches/basic-switches/" rel="noopener noreferrer" target="_blank">OMRON – basic / snap-action switch</a>
+<a class="chip" href="https://www.thrustmaster.com/products/sol-r-2-hosas-space-sim-duo/" rel="noopener noreferrer" target="_blank">Thrustmaster – hat switch, double trigger, ministick</a>
+</div>
+<p class="mini" style="margin-top:12px;">Megjegyzés: ahol a fogalom nem tipikus hivatalos terméknév, ott vagy műszaki leírásra, vagy közösségi magyarázóra mutat a link. Ezt külön jelöltem.</p>
+</section><div class="source-note">Ez a v3 verzió továbbra is egyetlen, önálló HTML-fájl maradt: nincs külső CSS-könyvtár és nincs CDN-függőség.</div><footer>
+      Készült abból a célból, hogy laikus szemmel is érthető legyen a joystickok közti valódi technikai különbség, ne csak a marketingcímke.
+    </footer></main></div>
+</body>
+</html>
